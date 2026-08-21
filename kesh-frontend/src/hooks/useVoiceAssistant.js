@@ -47,6 +47,7 @@ export function useVoiceAssistant({ onFinalTranscript, lang = 'en-US', onDebug }
   const WAKE_PHRASES = ['hey jarvis', 'hi jarvis', 'ok jarvis', 'okay jarvis']
 
   const pendingTranscriptRef = useRef('')
+  const latestInterimGuessRef = useRef('') // most recent interim-only guess, used if nothing ever finalizes
   const silenceTimerRef = useRef(null)
   const maxBufferTimerRef = useRef(null) // hard cap so buffering never waits forever
   const latestFullTranscriptRef = useRef('') // best-guess whole-session transcript, final or not
@@ -107,8 +108,9 @@ export function useVoiceAssistant({ onFinalTranscript, lang = 'en-US', onDebug }
 
   const commitPendingTranscript = useCallback((recognition) => {
     consumedResultCountRef.current = latestEventResultsLengthRef.current
-    const text = pendingTranscriptRef.current.trim()
+    const text = pendingTranscriptRef.current.trim() || latestInterimGuessRef.current.trim()
     pendingTranscriptRef.current = ''
+    latestInterimGuessRef.current = ''
     latestFullTranscriptRef.current = ''
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current)
@@ -201,14 +203,24 @@ export function useVoiceAssistant({ onFinalTranscript, lang = 'en-US', onDebug }
       }
 
       // Actively capturing an utterance (push-to-talk, hands-free, or awake-after-wake-word).
-      if (finalChunk.trim()) {
-        const wasEmpty = !pendingTranscriptRef.current.trim()
-        pendingTranscriptRef.current = (pendingTranscriptRef.current + ' ' + finalChunk).trim()
+      // IMPORTANT: on some devices, results NEVER get marked "final" — only
+      // interim ones keep arriving. If our timers only reset on final chunks,
+      // recognition can stay in "Listening..." forever with nothing ever
+      // committed. So we now treat ANY activity (interim or final) as a
+      // reason to (re)start the silence/hard-cap timers, and keep the latest
+      // interim guess ready to send as a last resort if nothing ever finalizes.
+      if (finalChunk.trim() || interimText.trim()) {
+        const wasEmpty = !pendingTranscriptRef.current.trim() && !latestInterimGuessRef.current.trim()
+        if (finalChunk.trim()) {
+          pendingTranscriptRef.current = (pendingTranscriptRef.current + ' ' + finalChunk).trim()
+        }
+        latestInterimGuessRef.current = interimText.trim() || latestInterimGuessRef.current
+
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
         silenceTimerRef.current = setTimeout(() => commitPendingTranscript(recognition), SILENCE_COMMIT_MS)
-        // Start the hard cap only on the first chunk of a fresh utterance —
-        // this guarantees a commit within MAX_BUFFER_MS even if fragments
-        // keep arriving fast enough to keep resetting the silence timer.
+        // Start the hard cap only on the first activity of a fresh utterance —
+        // this guarantees a commit within MAX_BUFFER_MS even if activity
+        // keeps arriving fast enough to keep resetting the silence timer.
         if (wasEmpty) {
           if (maxBufferTimerRef.current) clearTimeout(maxBufferTimerRef.current)
           maxBufferTimerRef.current = setTimeout(() => commitPendingTranscript(recognition), MAX_BUFFER_MS)
@@ -227,10 +239,12 @@ export function useVoiceAssistant({ onFinalTranscript, lang = 'en-US', onDebug }
       // silently lost when the session ended.
       const wasActivelyListening = manualListenRef.current || handsFreeRef.current || awakeRef.current
       const pending = pendingTranscriptRef.current.trim()
+      const interimGuess = latestInterimGuessRef.current.trim()
       const fallback = latestFullTranscriptRef.current.trim()
-      const textToSend = pending || fallback
+      const textToSend = pending || interimGuess || fallback
 
       pendingTranscriptRef.current = ''
+      latestInterimGuessRef.current = ''
       latestFullTranscriptRef.current = ''
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current)
@@ -315,6 +329,7 @@ export function useVoiceAssistant({ onFinalTranscript, lang = 'en-US', onDebug }
     manualListenRef.current = true
     noSpeechRetryRef.current = 0
     pendingTranscriptRef.current = ''
+    latestInterimGuessRef.current = ''
     latestFullTranscriptRef.current = ''
     consumedResultCountRef.current = 0
     latestEventResultsLengthRef.current = 0
@@ -380,6 +395,7 @@ export function useVoiceAssistant({ onFinalTranscript, lang = 'en-US', onDebug }
       } else {
         awakeRef.current = false
         pendingTranscriptRef.current = ''
+        latestInterimGuessRef.current = ''
         latestFullTranscriptRef.current = ''
         if (awakeGraceTimeoutRef.current) clearTimeout(awakeGraceTimeoutRef.current)
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
