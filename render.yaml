@@ -1,0 +1,40 @@
+# Render Blueprint — lets you deploy by connecting this repo and clicking
+# "New Blueprint Instance" instead of configuring everything by hand.
+# https://render.com/docs/blueprint-spec
+#
+# This file MUST live at the repository root for Render's Blueprint
+# auto-detection to find it — that's why it's here and not inside
+# kesh-backend/, even though it only deploys the backend. `rootDir` tells
+# Render which subfolder to actually build from (monorepo support).
+#
+# NOTE: This does NOT include a Postgres database, since you're using Neon
+# (per your existing portfolio setup) rather than Render's own Postgres.
+# Set the actual secret values in the Render dashboard's Environment tab
+# after creating the service — never commit real secrets to this file.
+
+services:
+  - type: web
+    name: kesh-backend
+    runtime: docker
+    rootDir: kesh-backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false        # set in Render dashboard — your Neon connection string (jdbc:postgresql://...)
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false        # generate with: openssl rand -base64 32
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false        # your Vercel frontend URL, e.g. https://kesh-frontend.vercel.app
+      - key: GROQ_API_KEY
+        sync: false        # required — deployed Kesh has no offline brain fallback
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: NEWSAPI_API_KEY
+        sync: false

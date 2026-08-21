@@ -1,0 +1,19 @@
+# --- Backend (Java/Maven) ---
+kesh-backend/target/
+kesh-backend/.env
+
+# --- Frontend (Node/Vite) ---
+kesh-frontend/node_modules/
+kesh-frontend/dist/
+kesh-frontend/.env
+
+# --- Desktop (Tauri/Rust) ---
+kesh-desktop/node_modules/
+kesh-desktop/src-tauri/target/
+
+# --- General ---
+.DS_Store
+*.log
+.idea/
+*.iml
+.vscode/

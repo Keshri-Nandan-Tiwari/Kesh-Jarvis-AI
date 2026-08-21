@@ -1,0 +1,44 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: kesh-backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kesh_db
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update      # auto-creates/updates tables from entities - fine for dev
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+# --- Kesh brain configuration ---
+kesh:
+  ollama:
+    base-url: http://localhost:11434
+    model: llama3.1:8b        # change to mistral:7b or a smaller model if your PC is slower
+
+  groq:
+    api-key: ${GROQ_API_KEY:}          # put your real key in a .env file, never commit it
+    model: openai/gpt-oss-120b
+
+  gemini:
+    api-key: ${GEMINI_API_KEY:}        # fallback if Groq key is missing/fails
+    model: gemini-1.5-flash
+
+  openweather:
+    api-key: ${OPENWEATHER_API_KEY:}   # free key: https://home.openweathermap.org/api_keys
+
+  newsapi:
+    api-key: ${NEWSAPI_API_KEY:}       # free key: https://newsapi.org/register
+
+  jwt:
+    secret: ${JWT_SECRET:}             # REQUIRED — must be at least 32 characters. Generate your own, never use a default.
+    expiration-ms: 604800000           # 7 days
+
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
