@@ -4,6 +4,7 @@ import ChatWindow from './components/ChatWindow.jsx'
 import OrbView from './components/OrbView.jsx'
 import SettingsPanel from './components/SettingsPanel.jsx'
 import AuthScreen from './components/AuthScreen.jsx'
+import VoiceDebugPanel from './components/VoiceDebugPanel.jsx'
 import { sendMessage, getSessions, getHistory, checkHealth, getStoredUser, clearAuth, AuthError } from './api.js'
 import { useVoiceAssistant } from './hooks/useVoiceAssistant.js'
 
@@ -14,7 +15,7 @@ export default function App() {
   const [messages, setMessages] = useState([])
   const [sending, setSending] = useState(false)
   const [backendOnline, setBackendOnline] = useState(true)
-  const [viewMode, setViewMode] = useState('orb') // 'chat' | 'orb'
+  const [viewMode, setViewMode] = useState('orb') // 'chat' | 'orb' | 'debug'
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
@@ -196,7 +197,12 @@ export default function App() {
         responseStyle={responseStyle}
         setResponseStyle={setResponseStyle}
         voice={voice}
+        onOpenDebug={() => { setSettingsOpen(false); setViewMode('debug') }}
       />
+
+      {viewMode === 'debug' && (
+        <VoiceDebugPanel onClose={() => setViewMode('orb')} />
+      )}
     </div>
   )
 }

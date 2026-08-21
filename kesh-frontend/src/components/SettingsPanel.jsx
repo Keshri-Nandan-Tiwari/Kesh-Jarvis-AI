@@ -6,7 +6,7 @@ const RESPONSE_STYLES = [
   { id: 'deep', label: 'Deep', hint: 'Thorough, more detail & nuance' },
 ]
 
-export default function SettingsPanel({ open, onClose, theme, setTheme, language, setLanguage, responseStyle, setResponseStyle, voice }) {
+export default function SettingsPanel({ open, onClose, theme, setTheme, language, setLanguage, responseStyle, setResponseStyle, voice, onOpenDebug }) {
   if (!open) return null
 
   return (
@@ -93,6 +93,15 @@ export default function SettingsPanel({ open, onClose, theme, setTheme, language
             Jarvis — a personal AI assistant. Hybrid brain (offline Ollama + cloud
             Groq/Gemini), built entirely on free tools.
           </p>
+          {onOpenDebug && (
+            <button
+              className="wake-word-toggle"
+              style={{ marginTop: 10 }}
+              onClick={onOpenDebug}
+            >
+              🔧 Run raw mic diagnostic
+            </button>
+          )}
         </section>
       </div>
     </div>
