@@ -82,13 +82,13 @@ export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, on
 
       {dictating ? (
         <form className="orb-dictation-bar" onSubmit={handleSubmit}>
+          <button type="button" className="orb-dictation-cancel" onClick={() => setDictating(false)} title="Cancel">✕</button>
           <input
             ref={inputRef}
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Tap your keyboard's mic to talk, or type…"
-            onBlur={() => { if (!text.trim()) setDictating(false) }}
           />
           <button type="submit" className="orb-dictation-send">➤</button>
         </form>
