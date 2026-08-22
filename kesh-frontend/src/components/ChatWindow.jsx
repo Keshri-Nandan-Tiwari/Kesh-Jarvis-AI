@@ -62,8 +62,11 @@ export default function ChatWindow({ messages, onSend, sending, voice, onOpenOrb
   }
 
   function handleMicTap() {
-    viaMicRef.current = true
-    textAreaRef.current?.focus()
+    if (voice.micState === 'listening') {
+      voice.stopListening()
+    } else {
+      voice.startListening()
+    }
   }
 
   function handleFileChange(e) {
@@ -165,13 +168,13 @@ export default function ChatWindow({ messages, onSend, sending, voice, onOpenOrb
                 handleSubmit(e)
               }
             }}
-            placeholder="Message Jarvis..."
+            placeholder={voice.micState === 'listening' ? 'Listening...' : 'Message Jarvis...'}
             disabled={sending}
           />
 
           <button
             type="button"
-            className="pill-btn mic-inline-btn"
+            className={`pill-btn mic-inline-btn ${voice.micState}`}
             onClick={handleMicTap}
             title="Tap, then use your keyboard's mic to dictate"
           >
