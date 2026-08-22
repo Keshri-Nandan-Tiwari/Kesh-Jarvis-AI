@@ -16,10 +16,27 @@ const STATUS_LABEL = {
 // box: the on-screen keyboard appears with its own (reliable) mic button
 // right there for you to use, and submitting sends it to Jarvis exactly
 // like a spoken message — including getting a spoken reply back.
+//
+// IMPORTANT: the text input below is intentionally UNCONTROLLED (no
+// value/onChange wired to React state on every keystroke). A fully
+// React-controlled input re-renders on every character, and on some
+// Android WebViews that fights with the keyboard's own voice-typing
+// overlay writing directly into the field — causing it to kick back to
+// the normal keyboard the instant you tap its mic. Reading the value
+// only once, at submit time, avoids that fight entirely.
+//
+// CONTINUOUS MODE: true always-on hands-free listening isn't reliably
+// possible from a webpage — the OS keyboard's mic requires a manual tap,
+// browsers don't let JS auto-trigger it. This gets as close as honestly
+// possible: after Jarvis finishes speaking, the dictation box reopens on
+// its own, so continuing the conversation is just one tap (the keyboard's
+// mic) instead of two. Tapping mic any time — including mid-reply —
+// immediately stops Jarvis talking, so you can always interrupt.
 export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, onOpenSettings, lastUserMessage, lastAssistantMessage }) {
   const [dictating, setDictating] = useState(false)
-  const [text, setText] = useState('')
+  const [continuousMode, setContinuousMode] = useState(true)
   const inputRef = useRef(null)
+  const prevOrbStateRef = useRef(orbState)
 
   useEffect(() => {
     if (dictating) {
@@ -28,20 +45,35 @@ export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, on
     }
   }, [dictating])
 
+  // Auto-reopen the dictation box once Jarvis finishes speaking, if
+  // Continuous Mode is on — makes back-and-forth feel like one flow
+  // instead of having to tap the big mic button again every single time.
+  useEffect(() => {
+    const wasSpeaking = prevOrbStateRef.current === 'speaking'
+    const nowIdle = orbState === 'idle'
+    if (wasSpeaking && nowIdle && continuousMode && !dictating) {
+      const t = setTimeout(() => setDictating(true), 400)
+      prevOrbStateRef.current = orbState
+      return () => clearTimeout(t)
+    }
+    prevOrbStateRef.current = orbState
+  }, [orbState, continuousMode, dictating])
+
   function openDictation() {
-    setText('')
+    // Tapping mic always interrupts — if Jarvis is mid-reply, stop it now.
+    window.speechSynthesis.cancel()
     setDictating(true)
   }
 
   function handleSubmit(e) {
     e.preventDefault()
-    const trimmed = text.trim()
+    const trimmed = (inputRef.current?.value || '').trim()
     if (!trimmed) {
       setDictating(false)
       return
     }
     onSubmitVoiceText(trimmed)
-    setText('')
+    if (inputRef.current) inputRef.current.value = ''
     setDictating(false)
   }
 
@@ -86,8 +118,7 @@ export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, on
           <input
             ref={inputRef}
             type="text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
+            defaultValue=""
             placeholder="Tap your keyboard's mic to talk, or type…"
           />
           <button type="submit" className="orb-dictation-send">➤</button>
@@ -100,6 +131,13 @@ export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, on
             title="Talk to Jarvis"
           >
             <MicIcon size={24} />
+          </button>
+          <button
+            className={`handsfree-toggle ${continuousMode ? 'on' : ''}`}
+            onClick={() => setContinuousMode((v) => !v)}
+            title="Automatically reopen the mic after each reply"
+          >
+            {continuousMode ? '🔁 Continuous: ON' : '🔁 Continuous: OFF'}
           </button>
         </div>
       )}
