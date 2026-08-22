@@ -139,12 +139,8 @@ export default function App() {
 
   const lastAssistantMessage = [...messages].reverse().find((m) => m.role === 'assistant')
 
-  function handlePushToTalk() {
-    if (voice.micState === 'listening') {
-      voice.stopListening()
-    } else {
-      voice.startListening()
-    }
+  function handleVoiceDictation(text) {
+    handleSend(text, 'voice')
   }
 
   if (!user) {
@@ -182,7 +178,7 @@ export default function App() {
           orbState={orbState}
           voice={voice}
           onExit={() => setViewMode('chat')}
-          onPushToTalk={handlePushToTalk}
+          onSubmitVoiceText={handleVoiceDictation}
           onOpenSettings={() => setSettingsOpen(true)}
         />
       )}

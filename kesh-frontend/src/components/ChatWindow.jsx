@@ -22,6 +22,12 @@ export default function ChatWindow({ messages, onSend, sending, voice, onOpenOrb
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
   const textAreaRef = useRef(null)
+  // Tracks whether the CURRENT text in the box got there because the user
+  // tapped the mic (then dictated via their keyboard's own mic button) —
+  // Chrome's built-in speech recognition is unreliable on many Android
+  // devices, so we lean on the keyboard's mic instead, but still want the
+  // reply spoken aloud when the intent was clearly "talk to Jarvis".
+  const viaMicRef = useRef(false)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -41,7 +47,9 @@ export default function ChatWindow({ messages, onSend, sending, voice, onOpenOrb
       }
     }
 
-    onSend(finalText)
+    const source = viaMicRef.current ? 'voice' : 'text'
+    viaMicRef.current = false
+    onSend(finalText, source)
     setInput('')
     setAttachedFile(null)
     setAttachedText(null)
@@ -53,12 +61,9 @@ export default function ChatWindow({ messages, onSend, sending, voice, onOpenOrb
     onSend(text)
   }
 
-  function handlePushToTalk() {
-    if (voice.micState === 'listening') {
-      voice.stopListening()
-    } else {
-      voice.startListening()
-    }
+  function handleMicTap() {
+    viaMicRef.current = true
+    textAreaRef.current?.focus()
   }
 
   function handleFileChange(e) {
@@ -160,15 +165,15 @@ export default function ChatWindow({ messages, onSend, sending, voice, onOpenOrb
                 handleSubmit(e)
               }
             }}
-            placeholder={voice.micState === 'listening' ? 'Listening...' : 'Message Jarvis...'}
+            placeholder="Message Jarvis..."
             disabled={sending}
           />
 
           <button
             type="button"
-            className={`pill-btn mic-inline-btn ${voice.micState}`}
-            onClick={handlePushToTalk}
-            title="Push to talk"
+            className="pill-btn mic-inline-btn"
+            onClick={handleMicTap}
+            title="Tap, then use your keyboard's mic to dictate"
           >
             <MicIcon size={17} />
           </button>

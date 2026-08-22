@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import KeshOrb from './KeshOrb.jsx'
 import { MicIcon } from './Icons.jsx'
 
@@ -8,7 +9,42 @@ const STATUS_LABEL = {
   speaking: 'Speaking…',
 }
 
-export default function OrbView({ orbState, voice, onExit, onPushToTalk, onOpenSettings }) {
+// Chrome's in-browser SpeechRecognition is unreliable on a lot of Android
+// devices — it can silently never fire a result at all, even though the
+// phone's own keyboard dictation (Gboard etc.) works perfectly. Rather than
+// depend on the flaky browser API, tapping the mic opens a small dictation
+// box: the on-screen keyboard appears with its own (reliable) mic button
+// right there for you to use, and submitting sends it to Jarvis exactly
+// like a spoken message — including getting a spoken reply back.
+export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, onOpenSettings }) {
+  const [dictating, setDictating] = useState(false)
+  const [text, setText] = useState('')
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    if (dictating) {
+      const t = setTimeout(() => inputRef.current?.focus(), 50)
+      return () => clearTimeout(t)
+    }
+  }, [dictating])
+
+  function openDictation() {
+    setText('')
+    setDictating(true)
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    const trimmed = text.trim()
+    if (!trimmed) {
+      setDictating(false)
+      return
+    }
+    onSubmitVoiceText(trimmed)
+    setText('')
+    setDictating(false)
+  }
+
   return (
     <div className="orb-view">
       <div className="orb-topbar">
@@ -35,22 +71,29 @@ export default function OrbView({ orbState, voice, onExit, onPushToTalk, onOpenS
 
       <div className="orb-status">{STATUS_LABEL[orbState] || 'Ready'}</div>
 
-      <div className="orb-controls">
-        <button
-          className={`orb-mic-btn ${voice.micState}`}
-          onClick={onPushToTalk}
-          title="Push to talk"
-        >
-          <MicIcon size={24} />
-        </button>
-        <button
-          className={`handsfree-toggle ${voice.handsFree ? 'on' : ''}`}
-          onClick={voice.toggleHandsFree}
-          title="Keep the conversation going automatically until you turn it off"
-        >
-          {voice.handsFree ? '🔁 Continuous: ON' : '🔁 Continuous: OFF'}
-        </button>
-      </div>
+      {dictating ? (
+        <form className="orb-dictation-bar" onSubmit={handleSubmit}>
+          <input
+            ref={inputRef}
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Tap your keyboard's mic to dictate, or type…"
+            onBlur={() => { if (!text.trim()) setDictating(false) }}
+          />
+          <button type="submit" className="orb-dictation-send">➤</button>
+        </form>
+      ) : (
+        <div className="orb-controls">
+          <button
+            className="orb-mic-btn"
+            onClick={openDictation}
+            title="Talk to Jarvis (opens keyboard dictation)"
+          >
+            <MicIcon size={24} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -693,6 +693,43 @@ body {
   gap: 16px;
 }
 
+.orb-dictation-bar {
+  position: absolute;
+  bottom: 40px;
+  left: 20px;
+  right: 20px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-panel);
+  border: 1px solid var(--amber-dim);
+  border-radius: 26px;
+  padding: 8px 8px 8px 18px;
+}
+.orb-dictation-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  padding: 8px 0;
+}
+.orb-dictation-bar input::placeholder { color: var(--text-dim); font-size: 13.5px; }
+.orb-dictation-send {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--amber);
+  color: var(--on-accent);
+  font-size: 16px;
+  cursor: pointer;
+}
+
 .orb-mic-btn {
   width: 60px;
   height: 60px;
