@@ -693,6 +693,29 @@ body {
   gap: 16px;
 }
 
+.orb-caption {
+  position: absolute;
+  bottom: 120px;
+  left: 20px;
+  right: 20px;
+  z-index: 5;
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0 12px;
+}
+.orb-caption-user {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 0 0 6px;
+}
+.orb-caption-reply {
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0;
+}
+
 .orb-dictation-bar {
   position: absolute;
   bottom: 40px;
@@ -1099,4 +1122,6 @@ body {
   .welcome h1 { font-size: 26px; }
   .orb-controls { bottom: 34px; }
   .orb-mic-btn { width: 54px; height: 54px; }
+  .orb-caption { bottom: 108px; }
+  .orb-caption-reply { font-size: 14px; }
 }

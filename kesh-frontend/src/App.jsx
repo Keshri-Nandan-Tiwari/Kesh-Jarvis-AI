@@ -180,6 +180,8 @@ export default function App() {
           onExit={() => setViewMode('chat')}
           onSubmitVoiceText={handleVoiceDictation}
           onOpenSettings={() => setSettingsOpen(true)}
+          lastUserMessage={[...messages].reverse().find((m) => m.role === 'user')?.content}
+          lastAssistantMessage={lastAssistantMessage?.content}
         />
       )}
 

@@ -16,7 +16,7 @@ const STATUS_LABEL = {
 // box: the on-screen keyboard appears with its own (reliable) mic button
 // right there for you to use, and submitting sends it to Jarvis exactly
 // like a spoken message — including getting a spoken reply back.
-export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, onOpenSettings }) {
+export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, onOpenSettings, lastUserMessage, lastAssistantMessage }) {
   const [dictating, setDictating] = useState(false)
   const [text, setText] = useState('')
   const inputRef = useRef(null)
@@ -45,6 +45,8 @@ export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, on
     setDictating(false)
   }
 
+  const showExchange = !dictating && (lastUserMessage || lastAssistantMessage)
+
   return (
     <div className="orb-view">
       <div className="orb-topbar">
@@ -71,6 +73,13 @@ export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, on
 
       <div className="orb-status">{STATUS_LABEL[orbState] || 'Ready'}</div>
 
+      {showExchange && (
+        <div className="orb-caption">
+          {lastUserMessage && <p className="orb-caption-user">You: {lastUserMessage}</p>}
+          {lastAssistantMessage && <p className="orb-caption-reply">{lastAssistantMessage}</p>}
+        </div>
+      )}
+
       {dictating ? (
         <form className="orb-dictation-bar" onSubmit={handleSubmit}>
           <input
@@ -78,7 +87,7 @@ export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, on
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Tap your keyboard's mic to dictate, or type…"
+            placeholder="Tap your keyboard's mic to talk, or type…"
             onBlur={() => { if (!text.trim()) setDictating(false) }}
           />
           <button type="submit" className="orb-dictation-send">➤</button>
@@ -88,7 +97,7 @@ export default function OrbView({ orbState, voice, onExit, onSubmitVoiceText, on
           <button
             className="orb-mic-btn"
             onClick={openDictation}
-            title="Talk to Jarvis (opens keyboard dictation)"
+            title="Talk to Jarvis"
           >
             <MicIcon size={24} />
           </button>
