@@ -16,7 +16,9 @@ export const LANGUAGES = [
 
 export const THEMES = [
   { id: 'amber', label: 'Amber (JARVIS)' },
-  { id: 'crimson', label: 'Crimson' },
+  { id: 'crimson', label: 'Crimson (Dark Red)' },
   { id: 'violet', label: 'Violet' },
+  { id: 'sapphire', label: 'Sapphire (Dark Blue)' },
+  { id: 'obsidian', label: 'Obsidian (Dark Black)' },
   { id: 'light', label: 'Light' },
 ]

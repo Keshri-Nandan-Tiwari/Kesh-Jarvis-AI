@@ -1,9 +1,17 @@
 import { LANGUAGES, THEMES } from '../constants.js'
+import { GithubIcon, LinkedinIcon, InstagramIcon, MailIcon } from './Icons.jsx'
 
 const RESPONSE_STYLES = [
   { id: 'fast', label: 'Fast', hint: 'Short, snappy answers' },
   { id: 'balanced', label: 'Balanced', hint: 'Clear, reasonably concise' },
   { id: 'deep', label: 'Deep', hint: 'Thorough, more detail & nuance' },
+]
+
+const SOCIAL_LINKS = [
+  { id: 'github', label: 'GitHub', href: 'https://github.com/Keshri-Nandan-Tiwari', Icon: GithubIcon },
+  { id: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/keshri-nandan-tiwari-a68042290/', Icon: LinkedinIcon },
+  { id: 'instagram', label: 'Instagram', href: 'https://www.instagram.com/keshri_08__?igsh=MTk0NXQzbTYwbndyOA==', Icon: InstagramIcon },
+  { id: 'email', label: 'Email', href: 'mailto:keshrinandantiwari08@gmail.com', Icon: MailIcon },
 ]
 
 export default function SettingsPanel({ open, onClose, theme, setTheme, language, setLanguage, responseStyle, setResponseStyle, voice, onOpenDebug }) {
@@ -87,6 +95,26 @@ export default function SettingsPanel({ open, onClose, theme, setTheme, language
             </button>
           </section>
         )}
+
+        <section className="settings-section">
+          <h3>Connect</h3>
+          <p className="settings-hint">Built by Keshri — say hi.</p>
+          <div className="social-row">
+            {SOCIAL_LINKS.map(({ id, label, href, Icon }) => (
+              <a
+                key={id}
+                className="social-icon-link"
+                href={href}
+                target={id === 'email' ? undefined : '_blank'}
+                rel={id === 'email' ? undefined : 'noopener noreferrer'}
+                title={label}
+                aria-label={label}
+              >
+                <Icon size={19} />
+              </a>
+            ))}
+          </div>
+        </section>
 
         <section className="settings-section">
           <h3>About</h3>
