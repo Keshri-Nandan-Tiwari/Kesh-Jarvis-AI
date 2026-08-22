@@ -73,16 +73,17 @@ export default function SettingsPanel({ open, onClose, theme, setTheme, language
 
         {voice && (
           <section className="settings-section">
-            <h3>Wake Word</h3>
+            <h3>Continuous Conversation</h3>
             <p className="settings-hint">
-              When on, Jarvis passively listens for "Hey Jarvis" and wakes up to take your
-              command — no button needed. Uses your mic continuously in the background.
+              When on, Jarvis automatically starts listening again right after it
+              finishes speaking — so a back-and-forth conversation only needs one
+              tap on the mic to begin.
             </p>
             <button
-              className={`wake-word-toggle ${voice.wakeWordEnabled ? 'on' : ''}`}
-              onClick={voice.toggleWakeWord}
+              className={`wake-word-toggle ${voice.handsFree ? 'on' : ''}`}
+              onClick={voice.toggleHandsFree}
             >
-              {voice.wakeWordEnabled ? 'Wake word: ON — say "Hey Jarvis"' : 'Wake word: OFF'}
+              {voice.handsFree ? 'Continuous: ON' : 'Continuous: OFF'}
             </button>
           </section>
         )}

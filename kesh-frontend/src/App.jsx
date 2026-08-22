@@ -44,8 +44,16 @@ export default function App() {
   const voice = useVoiceAssistant({
     onFinalTranscript: (text) => handleSendRef.current(text, 'voice'),
     lang: language,
-    onDebug: (text) => setMessages((prev) => [...prev, { role: 'assistant', content: text, brainUsed: 'debug' }]),
   })
+
+  // Surface mic errors as a visible chat message so they're never silent.
+  const lastShownErrorRef = useRef(null)
+  useEffect(() => {
+    if (voice.micError && voice.micError !== lastShownErrorRef.current) {
+      lastShownErrorRef.current = voice.micError
+      setMessages((prev) => [...prev, { role: 'assistant', content: voice.micError, brainUsed: 'debug' }])
+    }
+  }, [voice.micError])
 
   const refreshSessions = useCallback(async () => {
     try {
